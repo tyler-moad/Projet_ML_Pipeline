@@ -3,28 +3,28 @@ class ModelPipeline:
     def __init__(self,model,params):
         self.model = model
         self.params = params
-    def transform(self):
-        pass
+        self.params_grid = None
     def set_params():
         self.model.set_params(**self.params)
+    def set_params_grid(param_grid:dict):
+        self.param_grid = param_grid
     def fit(self,X:np.array,y:np.array):
         self.model.fit(X,y)
     def predict(X:np.array):
         return self.model.predict(X)
-    def eval(self,X:np.array,y:np.array,metric:List[str]):
-        pass
-    def precision_recall(y_true,y_predict,n_classes):
-        p=[]
-        r=[]
-        for i in range(n_classes):
-            tp= sum(((y_true==i) & (y_predict==i)))
-            fp= sum(((y_true!=i) & (y_predict==i)))
-            fn= sum(((y_true==i) & (y_predict!=i)))
-            p.append(tp/(tp+fp))
-            r.append(tp/(tp+fn))
+    def eval(self,X:np.array,y:np.array,metric:str,cv:int=10,avg=False):
+        from sklearn.model_selection import cross_val_score
+        scores = cross_val_score(self.model,X,y,cv=cv)
+        if avg:
+            return np.mean(scores)
+        return scores
         
-        return p,r
-    def grid_search()
+    def best_model(X,y,scoring:str):
+        from sklearn.model_selection import GridSearchCV
+        cv = GridSearchCV(self.model,param_grid=self.param_grid,scoring=scoring)
+        return cv.best_estimator_
+
+        
     def cross_val(X,y,scoring:str):
 
 
