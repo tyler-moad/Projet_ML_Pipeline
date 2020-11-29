@@ -5,7 +5,7 @@ import pandas as pd
 class DataLoader:
 
     def __init__(self, data_path, missing_data_strategy: str = "mean", categorical_encoding: str = "label",
-                 test_size: float = 0.1, validation_size=0.1):
+                 test_size: float = 0.1, validation_size=0.1, categorical_threshold=15):
 
         if missing_data_strategy in ["mean", "median", "radical"]:
             self.missing_stategy = missing_data_strategy
@@ -20,6 +20,29 @@ class DataLoader:
         self.test_size = test_size
         self.validation_size = validation_size
         self.data = pd.read_csv(data_path)
+        self.categorical_threshold = categorical_threshold
+
+    def find_continuous_columns(self):
+        for col_name in self.data.columns:
+            if self.data[col_name].dtype == 'O':
+                print(col_name)
+                if len(set(self.data[col_name])) > self.categorical_threshold:
+                    # self.data[col_name].to_numeric(convert_numeric=True)
+                    self.data[col_name] = pd.to_numeric(self.data[col_name], downcast='float', errors='coerce')
+
+    def correct_typos(self):
+        for col_name in self.data.columns:
+            print(col_name)
+            if self.data[col_name].dtype == 'O':
+                values_taken = list(set(self.data[col_name]))
+                distance_matrix = [[LD(values_taken[i], values_taken[j]) for i in range(len(values_taken))] for j in
+                                   range(len(values_taken))]
+                typos = np.where((np.array(distance_matrix) > 0) & (np.array(distance_matrix) < 2))
+                typos = [point for point in zip(typos[0], typos[1]) if point[0] < point[1]]
+                for typo in typos:
+                    values_to_exchange = values_taken[typo[0]], values_taken[typo[1]]
+                    print(values_to_exchange)
+                    self.data[col_name][self.data[col_name] == values_to_exchange[0]] = values_to_exchange[1]
 
     def encode_categorical_columns(self):
         categorical_columns = self.find_categorical_columns()
@@ -27,7 +50,7 @@ class DataLoader:
             for col_name in categorical_columns:
                 self.data[col_name] = self.data[col_name].cat.codes
         elif self.categorical_encoding_stategy == "onehot":
-            pd.get_dummies(self.data, columns=categorical_columns, prefix=categorical_columns).head()
+            self.data = pd.get_dummies(self.data, columns=categorical_columns, prefix=categorical_columns)
 
     def find_categorical_columns(self):
         categorical_columns = []
@@ -45,13 +68,24 @@ class DataLoader:
         return incomplete_columns
 
     def complete_column(self, col_name, missing_strategy="mean"):
-
-        if missing_strategy == "mean":
-            mean = np.mean(self.data[col_name][np.where(self.data[col_name].isna() == False)[0]])
-            self.data[col_name][np.where(self.data[col_name].isna() == True)[0]] = mean
+        if self.data[col_name].dtype != "O":
+            if missing_strategy == "mean":
+                mean = np.mean(self.data[col_name][np.where(self.data[col_name].isna() == False)[0]])
+                self.data[col_name][np.where(self.data[col_name].isna() == True)[0]] = mean
+        else:
+            if missing_strategy == "mean":
+                available_data = list(self.data[col_name][np.where(self.data[col_name].isna() == False)[0]].values)
+                most_found = max(set(available_data), key=available_data.count)
+                self.data[col_name][np.where(self.data[col_name].isna() == True)[0]] = most_found
 
     def infer_missing_data(self):
         incomplete_columns = self.find_incomplete_columns()
         for col_name in incomplete_columns:
             print(col_name)
             self.complete_column(col_name=col_name, missing_strategy=self.missing_stategy)
+
+    def transform(self):
+        self.find_continuous_columns()
+        self.infer_missing_data()
+        self.correct_typos()
+        self.encode_categorical_columns()
