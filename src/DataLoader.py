@@ -2,22 +2,6 @@ import numpy as np
 import pandas as pd
 
 
-def LD(s, t):
-    if s == "":
-        return len(t)
-    if t == "":
-        return len(s)
-    if s[-1] == t[-1]:
-        cost = 0
-    else:
-        cost = 1
-
-    res = min([LD(s[:-1], t) + 1,
-               LD(s, t[:-1]) + 1,
-               LD(s[:-1], t[:-1]) + cost])
-
-    return res
-
 class DataLoader:
 
     def __init__(self, data_path, missing_data_strategy: str = "mean", categorical_encoding: str = "label",
@@ -43,21 +27,22 @@ class DataLoader:
             if self.data[col_name].dtype == 'O':
                 print(col_name)
                 if len(set(self.data[col_name])) > self.categorical_threshold:
+                    # self.data[col_name].to_numeric(convert_numeric=True)
                     self.data[col_name] = pd.to_numeric(self.data[col_name], downcast='float', errors='coerce')
 
     def correct_typos(self):
         for col_name in self.data.columns:
-            if data[col_name].dtype == 'O':
+            print(col_name)
+            if self.data[col_name].dtype == 'O':
                 values_taken = list(set(self.data[col_name]))
-
                 distance_matrix = [[LD(values_taken[i], values_taken[j]) for i in range(len(values_taken))] for j in
                                    range(len(values_taken))]
-                typos = np.where((np.array(matrix) > 0) & (np.array(matrix) < 3))
+                typos = np.where((np.array(distance_matrix) > 0) & (np.array(distance_matrix) < 2))
                 typos = [point for point in zip(typos[0], typos[1]) if point[0] < point[1]]
                 for typo in typos:
                     values_to_exchange = values_taken[typo[0]], values_taken[typo[1]]
                     print(values_to_exchange)
-                    data["classification"][self.data["classification"] == values_to_exchange[0]] = values_to_exchange[1]
+                    self.data[col_name][self.data[col_name] == values_to_exchange[0]] = values_to_exchange[1]
 
     def encode_categorical_columns(self):
         categorical_columns = self.find_categorical_columns()
@@ -98,3 +83,9 @@ class DataLoader:
         for col_name in incomplete_columns:
             print(col_name)
             self.complete_column(col_name=col_name, missing_strategy=self.missing_stategy)
+
+    def transform(self):
+        self.find_continuous_columns()
+        self.infer_missing_data()
+        self.correct_typos()
+        self.encode_categorical_columns()
