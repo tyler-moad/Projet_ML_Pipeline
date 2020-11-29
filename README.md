@@ -2,7 +2,7 @@
 
 Fait par : 
 
-Maachou Marouane \n
-Bensaid Reda \n
-Jallouli Mouad \n
-Taoufik Moad \n
+Maachou Marouane <br/>
+Bensaid Reda <br/>
+Jallouli Mouad <br/>
+Taoufik Moad <br/>
