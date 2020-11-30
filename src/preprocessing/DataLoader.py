@@ -68,15 +68,23 @@ class DataLoader:
         return incomplete_columns
 
     def complete_column(self, col_name, missing_strategy="mean"):
-        if self.data[col_name].dtype != "O":
-            if missing_strategy == "mean":
-                mean = np.mean(self.data[col_name][np.where(self.data[col_name].isna() == False)[0]])
-                self.data[col_name][np.where(self.data[col_name].isna() == True)[0]] = mean
-        else:
-            if missing_strategy == "mean":
-                available_data = list(self.data[col_name][np.where(self.data[col_name].isna() == False)[0]].values)
-                most_found = max(set(available_data), key=available_data.count)
-                self.data[col_name][np.where(self.data[col_name].isna() == True)[0]] = most_found
+        if np.sum(self.data[col_name].isna()) > 0:
+            if self.data[col_name].dtype != "O":
+                if missing_strategy == "mean":
+                    mean = np.mean(self.data[col_name][np.where(self.data[col_name].isna() == False)[0]])
+                    self.data[col_name][np.where(self.data[col_name].isna() == True)[0]] = mean
+                elif missing_strategy == "median":
+                    median = np.median(self.data[col_name][np.where(self.data[col_name].isna() == False)[0]])
+                    self.data[col_name][np.where(self.data[col_name].isna() == True)[0]] = median
+                elif missing_strategy == "radical":
+                    self.data = self.data.drop(columns=[col_name])
+            else:
+                if missing_strategy == "mean" or missing_strategy == "median":
+                    available_data = list(self.data[col_name][np.where(self.data[col_name].isna() == False)[0]].values)
+                    most_found = max(set(available_data), key=available_data.count)
+                    self.data[col_name][np.where(self.data[col_name].isna() == True)[0]] = most_found
+                elif missing_strategy == "radical":
+                    self.data = self.data.drop(columns=[col_name])
 
     def infer_missing_data(self):
         incomplete_columns = self.find_incomplete_columns()
@@ -89,3 +97,4 @@ class DataLoader:
         self.infer_missing_data()
         self.correct_typos()
         self.encode_categorical_columns()
+
