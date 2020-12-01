@@ -3,7 +3,9 @@ from model import ModelPipeline
 from sklearn.svm import SVC
 
 #Data loading and preprocessing
-dl = DataLoader()
+PATH = './data/'
+dl = DataLoader(data_path=PATH)
+dl.transform()
 # Instantiate the MOdel 
 pipe = ModelPipeline(SVC())
 

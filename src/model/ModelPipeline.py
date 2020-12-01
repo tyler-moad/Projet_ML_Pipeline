@@ -32,7 +32,7 @@ class ModelPipeline:
         y_pred = self.model.predict(X)
         return self.f1_score(y,y_pred)
 
-    def best_model(X,y,param_grid,scoring:str):
+    def find_best_model(X,y,param_grid,scoring:str):
         """Set model to the model with the best parameters
         Parameters
         ----------
