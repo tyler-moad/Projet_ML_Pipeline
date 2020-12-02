@@ -1,3 +1,4 @@
 /data
 .ssh
 /notebook
+**/__pycache__
