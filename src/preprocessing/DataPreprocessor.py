@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
+from sklearn.base import TransformerMixin
 
-
-class DataLoader:
+class DataPreprocessor(TransformerMixin):
 
     def __init__(self, data_path, missing_data_strategy: str = "mean", categorical_encoding: str = "label",
                  test_size: float = 0.1, validation_size=0.1, categorical_threshold=15):
@@ -92,9 +92,16 @@ class DataLoader:
             print(col_name)
             self.complete_column(col_name=col_name, missing_strategy=self.missing_stategy)
 
-    def transform(self):
+    def transform(self,X,y=None):
+        self.X = X
+        self.y = y
         self.find_continuous_columns()
         self.infer_missing_data()
         self.correct_typos()
         self.encode_categorical_columns()
+    def fit(self,X,y):
+        # Save used setup
+        return self
+
+
 

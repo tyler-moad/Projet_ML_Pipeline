@@ -1,5 +1,5 @@
-import typing
-class ModelPipeline:
+from sklearn.base import BaseEstimator
+class Model(BaseEstimator):
     def __init__(self,model,params=None):
         self.model = model
         self.params = params
