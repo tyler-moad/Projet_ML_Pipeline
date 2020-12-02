@@ -101,6 +101,7 @@ class DataPreprocessor(TransformerMixin):
         self.encode_categorical_columns()
     def fit(self,X,y):
         # Save used setup
+        self.transform(X,y)
         return self
 
 
