@@ -36,7 +36,7 @@ class DataNormaliser:
 
 class DataPreprocessor(TransformerMixin):
 
-    def __init__(self, data_path, missing_data_strategy: str = "mean", categorical_encoding: str = "label",
+    def __init__(self, data_path=None, missing_data_strategy: str = "mean", categorical_encoding: str = "label",
                  test_size: float = 0.1, validation_size=0.1, categorical_threshold=15):
 
         if missing_data_strategy in ["mean", "median", "radical"]:
@@ -51,7 +51,7 @@ class DataPreprocessor(TransformerMixin):
 
         self.test_size = test_size
         self.validation_size = validation_size
-        self.data = pd.read_csv(data_path)
+        # self.data = pd.read_csv(data_path)
         self.categorical_threshold = categorical_threshold
 
     def find_continuous_columns(self):
@@ -125,12 +125,12 @@ class DataPreprocessor(TransformerMixin):
             self.complete_column(col_name=col_name, missing_strategy=self.missing_stategy)
 
     def transform(self,X,y=None):
-        self.X = X
-        self.y = y
+        self.data = X
         self.find_continuous_columns()
-        self.infer_missing_data()
+        # self.infer_missing_data()
         self.correct_typos()
         self.encode_categorical_columns()
+        return self.data
     def fit(self,X,y):
         # Save used setup
         self.transform(X,y)
