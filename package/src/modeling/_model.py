@@ -4,24 +4,18 @@ class Model(BaseEstimator):
     def __init__(self,model,params=None):
         self.model = model
         self.params = params
-    """ def set_params():
-        self.model.set_params(**self.params)
-    def set_params_grid(param_grid:dict):
-        self.param_grid = param_grid
-    def fit(self,X:np.array,y:np.array):
-        self.model.fit(X,y)
-    def predict(X:np.array):
-        return self.model.predict(X) """
+    
     def f1_score(y_true,y_predict):
-        p=[]
-        r=[]
+        p=0
+        r=0
         n_classes = y_true.nunique()
+        print(n_classes)
         for i in range(n_classes):
             tp= sum(((y_true==i) & (y_predict==i)))
             fp= sum(((y_true!=i) & (y_predict==i)))
             fn= sum(((y_true==i) & (y_predict!=i)))
-            p.append(tp/(tp+fp))
-            r.append(tp/(tp+fn))
+            p += tp/(tp+fp))
+            r += tp/(tp+fn)
         
         return 2*p*r/(p+r)
 
