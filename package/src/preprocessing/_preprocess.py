@@ -73,7 +73,7 @@ class DataPreprocessor(TransformerMixin):
             if self.data[col_name].dtype == 'O':
                 print(col_name)
                 if len(set(self.data[col_name])) > self.categorical_threshold:
-                    # self.data[col_name].to_numeric(convert_numeric=True)
+                    self.data[col_name].to_numeric(convert_numeric=True)
                     self.data[col_name] = pd.to_numeric(self.data[col_name], downcast='float', errors='coerce')
 
     def correct_typos(self):
@@ -135,7 +135,7 @@ class DataPreprocessor(TransformerMixin):
     def infer_missing_data(self):
         incomplete_columns = self.find_incomplete_columns()
         for col_name in incomplete_columns:
-            print(col_name)
+            # print(col_name)
             self.complete_column(col_name=col_name, missing_strategy=self.missing_stategy)
 
     def transform(self,X,y=None):
