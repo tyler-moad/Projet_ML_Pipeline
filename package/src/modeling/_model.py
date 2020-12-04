@@ -8,10 +8,10 @@ class Model():
         self.best_score_ = None
         self.best_params_ = None
 
-
+    """@Author Reda Bensaid"""
     def cross_validation_score(self, X_train: np.array, y_train: np.array,metric:str = "accuracy",  k=10):
-        evaluation = []
         
+        evaluation = []
         for i in range(k):
             X_test_fold = X_train[int((i / k) * len(X_train)):int(((i + 1) / k) * len(X_train))]
             y_test_fold = y_train[int((i / k) * len(y_train)):int(((i + 1) / k) * len(y_train))]
@@ -28,6 +28,7 @@ class Model():
                 evaluation.append(self.f1_score(y_test_fold, y_pred))
         return np.mean(evaluation)
 
+    """@Author Moad Taoufik"""
     def generateGrid(self,params):
         keys, values = zip(*params.items())
         grid = []
@@ -36,7 +37,7 @@ class Model():
             grid.append(d)
         return grid
         
-
+    """@Author Mouad Jallouli"""
     def gridsearchCV(self,X,y,params):
         params_grid = self.generateGrid(params)
         scores_dict = {}
@@ -52,10 +53,10 @@ class Model():
                 best_param = param
         self.best_score_ = best_score
         self.best_params_ = best_param
-    
+
+    """@Author Mouad Jallouli"""
     @staticmethod
     def f1_score(y_true, y_predict):
-        from sklearn.metrics import f1_score
         p = 0
         r = 0
         f = 0
@@ -64,18 +65,19 @@ class Model():
             tp = sum(((y_true == i) & (y_predict == i)))
             fp = sum(((y_true != i) & (y_predict == i)))
             fn = sum(((y_true == i) & (y_predict != i)))
-            if fp == 0:
+            if fp == 0: # edge case
                 p = 1
             else:
                 p = tp / (tp + fp)
-            if fn == 0:
+            if fn == 0: # edge case
                 r = 1
             else:
                 r = tp / (tp + fn)
             f += 2 * p * r / (p + r)
     
-        return f/n_classes  #f1_score(y_true, y_predict)
-
+        return f/n_classes 
+    
+    """@Author Moad Taoufik"""
     @staticmethod    
     def accuracy (y_true, y_predict):
         good_predictions = np.sum((y_true == y_predict)*1)

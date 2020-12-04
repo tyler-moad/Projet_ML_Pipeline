@@ -1,15 +1,11 @@
 
 
 # -*- coding: utf-8 -*-
-"""
-Created on Fri Dec  4 14:41:18 2020
 
-@author: TheMatrix
-"""
 import numpy as np
 import pandas as pd
-from sklearn.base import TransformerMixin
 
+"""@Author Marouane Maachou"""
 def LD(s, t):
     if s == "":
         return len(t)
@@ -26,6 +22,7 @@ def LD(s, t):
 
     return res
 
+"""@Author Moad Taoufik"""
 class DataNormaliser:
     def __init__(self, norm_strategy: str = "Mean"):
         self.offset_parameter = None
@@ -47,8 +44,8 @@ class DataNormaliser:
 
 
 
-
-class DataPreprocessor(TransformerMixin):
+"""@Author Marouane Maachou"""
+class DataPreprocessor:
 
     def __init__(self, missing_data_strategy: str = "mean", categorical_encoding: str = "label", categorical_threshold=15):
 

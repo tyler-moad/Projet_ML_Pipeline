@@ -1,6 +1,7 @@
 import numpy as np
-from sklearn.feature_selection import SelectKBest,mutual_info_classif
 
+
+"""@Author Moad Taoufik"""
 class FeatureSelector:
     #Class used to select features
     def __init__(self, output_dimension: int = None, variance_treshhold: float = 0.95):
@@ -11,7 +12,7 @@ class FeatureSelector:
         self.eigenvectors = None
         self.eigenvalues = None
 
-    def pca_fit(self, X_df):
+    def fit(self, X_df):
         #Takes pandas X dataframe as input and prepares for PCA transformation
         X = X_df.to_numpy()
         cov = np.cov(X, rowvar=False) #covariance matrix of our samples
@@ -21,7 +22,7 @@ class FeatureSelector:
         print(len(s), "componenents (PCA)")
 
 
-    def pca_transform(self, X_df):
+    def transform(self, X_df):
         X = X_df.to_numpy()
         if self.output_dimension == None: #if user does not provide output dimension use variance_treshhold as a criterion to apply pca
             explained_variance = 0

@@ -3,6 +3,7 @@ import numpy as np
 
 
 class DataLoader:
+    """@Author Mouad Jallouli"""
     def __init__(self, data_path,test_size:float=0.2,train_size:float=None,header :bool =True ):
         self.test_size = test_size
         self.train_size = train_size
@@ -14,7 +15,8 @@ class DataLoader:
         self.features = []
         self.X, self.X_train, self.X_test = None, None, None
         self.y, self.y_train, self.y_test = None,None, None
-    
+        
+    """@Author Reda Bensaid"""
     @staticmethod
     def train_test_split(X, y, test_size):
 
@@ -28,7 +30,7 @@ class DataLoader:
         y_test = y.iloc[int((1 - test_size) * len(y)):]
 
         return X_train, X_test, y_train, y_test
-
+    """@Author Mouad Jallouli"""
     def load(self,target_column,columns_to_remove=[]):
         print(columns_to_remove)
         self.target = target_column
