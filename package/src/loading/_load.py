@@ -3,9 +3,7 @@ import numpy as np
 
 
 class DataLoader:
-    """@Author Mouad Jallouli"""
-=======
-    """
+    """@author Mouad Jallouli
     This class implements a dataloader that is responsible for loading the datasets in diffenrent formats and split it to train test data
     """
     def __init__(self, data_path,test_size:float=0.2,train_size:float=None,header :bool =True ):

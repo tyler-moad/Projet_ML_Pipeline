@@ -1,10 +1,11 @@
 from itertools import product
+import numpy as np
 
 class Model():
 
     def __init__(self, model):
         self.model = model
-        self.metric = metric
+        # self.metric = metric
         self.best_score_ = None
         self.best_params_ = None
 
@@ -39,8 +40,12 @@ class Model():
         
     """@Author Mouad Jallouli"""
     def gridsearchCV(self,X,y,params):
+        """ 
+          Implements a grid search cross validation on the training dataset
+          The best found parameters and the best score are saved as a class attributes.
+               
+        """
         params_grid = self.generateGrid(params)
-        
         best_param = None
         best_score = 0
         for param in params_grid:
@@ -57,6 +62,27 @@ class Model():
     """@Author Mouad Jallouli"""
     @staticmethod
     def f1_score(y_true, y_predict):
+        p = 0
+        r = 0
+        f = 0
+        n_classes = y_true.nunique()
+        for i in range(n_classes):
+            tp = sum(((y_true == i) & (y_predict == i)))
+            fp = sum(((y_true != i) & (y_predict == i)))
+            fn = sum(((y_true == i) & (y_predict != i)))
+            if fp == 0: # edge case
+                p = 1
+            else:
+                p = tp / (tp + fp)
+            if fn == 0: # edge case
+                r = 1
+            else:
+                r = tp / (tp + fn)
+            f += 2 * p * r / (p + r)
+    
+        return f/n_classes 
+    @staticmethod
+    def _f1_score(y_true, y_predict):
         p = 0
         r = 0
         f = 0
