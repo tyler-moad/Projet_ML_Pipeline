@@ -14,27 +14,20 @@ class Model(BaseEstimator):
             tp= sum(((y_true==i) & (y_predict==i)))
             fp= sum(((y_true!=i) & (y_predict==i)))
             fn= sum(((y_true==i) & (y_predict!=i)))
-            p += tp/(tp+fp))
+            p += tp/(tp+fp)
             r += tp/(tp+fn)
         
         return 2*p*r/(p+r)
-
-    def eval(self,X:np.array,y:np.array,metric:str,cv:int=10,avg=True):
-        """ from sklearn.model_selection import cross_val_score
-        scores = cross_val_score(self.model,X,y,cv=cv)
-        if avg:
-            return np.mean(scores)
-        return scores """
-        y_pred = self.model.predict(X)
-        return self.f1_score(y,y_pred)
-    def gridsearchCV(X,y,param_grid):
+    def gridsearchCV(self,X,y,param_grid):
+        from sklearn.model_selection import ParameterGrid
         scores = {}
-        for c in param_grid['C']:
-            model = self.model.set_params(**{'C'=c})
-            score = self.cross_validation(X,y,model)
+        for params in ParameterGrid(param_grid):
+            model = self.model.set_params(**params)
+            score = self.cross_validation_score(X,y,model)
             scores[score] = model
         best_model = scores[max(scores.keys())]
-        return best_model
+        score = np.mean(scores.keys())
+        return best_model, score
             
 
     def find_best_model(X,y,param_grid,scoring:str):
@@ -57,7 +50,7 @@ class Model(BaseEstimator):
 
 
 
-    def cross_validation_score (self,X_train:np.array,y_train:np.array,k = 10) : 
+    def cross_validation_score(self,X_train:np.array,y_train:np.array,model,k = 10) : 
     
         evaluation = []
         for i in range(k):
@@ -65,8 +58,8 @@ class Model(BaseEstimator):
             y_test_fold = y_train[int((i/k)*len(y_train)):int(((i+1)/k)*len(y_train))]
             X_train_fold = np.concatenate((X_train[:int((i/k)*len(X_train))],X_train[int(((i+1)/k)*len(X_train)):]))
             y_train_fold = np.concatenate((y_train[:int((i/k)*len(y_train))],y_train[int(((i+1)/k)*len(y_train)):]))
-            self.model.fit(X_train_fold,y_train_fold)
-            y_pred = self.model.predict(X_test_fold)
+            model.fit(X_train_fold,y_train_fold)
+            y_pred = model.predict(X_test_fold)
             evaluation.append(f1_score(y_test_fold, y_pred))
         return np.mean(evaluation)
 
