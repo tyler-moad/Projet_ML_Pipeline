@@ -1,19 +1,15 @@
 from itertools import product
+
 class Model():
-    def __init__(self, model, metric:str = "accuracy"):
+
+    def __init__(self, model):
         self.model = model
         self.metric = metric
-        self.best_score = None
-        self.best_params = None
-
-    #def fit(self,X,Y,params_dic):
-     #   self.model.set_params(**params_dic)
-      #  self.model.fit(X,Y)
-    #def predict(self,X):
-     #   return self.model.predict(X)
+        self.best_score_ = None
+        self.best_params_ = None
 
 
-    def cross_validation_score(self, X_train: np.array, y_train: np.array,  k=10):
+    def cross_validation_score(self, X_train: np.array, y_train: np.array,metric:str = "accuracy",  k=10):
         evaluation = []
         
         for i in range(k):
@@ -26,7 +22,7 @@ class Model():
                 (y_train[:int((i / k) * len(y_train))], y_train[int(((i + 1) / k) * len(y_train)):]))
             self.model.fit(X_train_fold, y_train_fold)
             y_pred = self.model.predict(X_test_fold)
-            if self.metric == "accuracy" : 
+            if metric == "accuracy" : 
                 evaluation.append(self.accuracy(y_test_fold, y_pred))
             else : 
                 evaluation.append(self.f1_score(y_test_fold, y_pred))
@@ -54,12 +50,10 @@ class Model():
             if score > best_score:
                 best_score = score
                 best_param = param
-        self.best_score = best_score
-        self.best_params = best_param
+        self.best_score_ = best_score
+        self.best_params_ = best_param
     
     @staticmethod
-    #FIXME
-    # f1_score fiha mouchkil
     def f1_score(y_true, y_predict):
         from sklearn.metrics import f1_score
         p = 0
@@ -70,11 +64,17 @@ class Model():
             tp = sum(((y_true == i) & (y_predict == i)))
             fp = sum(((y_true != i) & (y_predict == i)))
             fn = sum(((y_true == i) & (y_predict != i)))
-            p = tp / (tp + fp)
-            r = tp / (tp + fn)
+            if fp == 0:
+                p = 1
+            else:
+                p = tp / (tp + fp)
+            if fn == 0:
+                r = 1
+            else:
+                r = tp / (tp + fn)
             f += 2 * p * r / (p + r)
     
-        return f/n_classes#f1_score(y_true, y_predict)
+        return f/n_classes  #f1_score(y_true, y_predict)
 
     @staticmethod    
     def accuracy (y_true, y_predict):
