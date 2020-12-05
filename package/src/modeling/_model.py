@@ -12,7 +12,15 @@ class Model():
 
     """@Author Reda Bensaid"""
     def cross_validation_score(self, X_train: np.array, y_train: np.array,metric:str = "accuracy",  k=10):
-        
+        """
+             this method calculate the performance of the model trained and tested
+             over all the folds and then returns the mean
+             :param X_train: the training samples
+             :param y_train: the training labels
+             :param metric : the metric to use to calculate the performance of the model (accuracy of f1_score)
+             :param k : number of folds
+             :return: the mean of the metrics over the training and test of all folds
+          """
         evaluation = []
         for i in range(k):
             X_test_fold = X_train[int((i / k) * len(X_train)):int(((i + 1) / k) * len(X_train))]
@@ -117,8 +125,18 @@ class Model():
     
         return pd.DataFrame(D)
     
-    """@Author Moad Taoufik"""
+    """@Author Reda Bensaid"""
     @staticmethod    
+<<<<<<< HEAD
     def _accuracy (y_true, y_predict):
+=======
+    def accuracy (y_true, y_predict):
+        """
+           this method calculate the accuracy of the prediction
+           :param y_true: the labels
+           :param y_predict: the predictions
+           :return: accuracy of the prediction
+        """
+>>>>>>> e0eea11677e00e81c590e6d754ba37bb36a11502
         good_predictions = np.sum((y_true == y_predict)*1)
         return good_predictions /len(y_true)
