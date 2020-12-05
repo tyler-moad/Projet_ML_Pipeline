@@ -1,28 +1,43 @@
 import numpy as np
 import pandas as pd
+from sklearn.base import TransformerMixin
+
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Dec  4 14:41:18 2020
+
+@author: TheMatrix
+"""
+import numpy as np
+import pandas as pd
 
 
-def LD(s, t):
-    if s == "":
-        return len(t)
-    if t == "":
-        return len(s)
-    if s[-1] == t[-1]:
-        cost = 0
-    else:
-        cost = 1
+class DataNormaliser:
+    def __init__(self, norm_strategy: str = "Mean"):
+        self.offset_parameter = None
+        self.scale_parameter = None
+        self.norm_strategy = norm_strategy
 
-    res = min([LD(s[:-1], t) + 1,
-               LD(s, t[:-1]) + 1,
-               LD(s[:-1], t[:-1]) + cost])
+    def fit(self, X):
+        if self.norm_strategy not in ["MinMax", "Mean"]:
+            raise Exception("Choose norm_strategy between MinMax or Mean")
+        if self.norm_strategy == "Mean":
+            self.offset_parameter = X.mean()
+            self.scale_parameter = X.std()
+        if self.norm_strategy == "MinMax":
+            self.offset_parameter = X.min()
+            self.scale_parameter = (X.max() - X.min())
 
-    return res
+    def transform(self, X):
+        return (X - self.offset_parameter) / self.scale_parameter
 
 
-class DataLoader:
 
-    def __init__(self, data_path, missing_data_strategy: str = "mean", categorical_encoding: str = "label",
-                 test_size: float = 0.1, validation_size=0.1, categorical_threshold=15, headers: bool = True):
+
+class DataPreprocessor(TransformerMixin):
+
+    def __init__(self, data_path=None, missing_data_strategy: str = "mean", categorical_encoding: str = "label",
+                 test_size: float = 0.1, validation_size=0.1, categorical_threshold=15):
 
         if missing_data_strategy in ["mean", "median", "radical"]:
             self.missing_stategy = missing_data_strategy
@@ -36,21 +51,20 @@ class DataLoader:
 
         self.test_size = test_size
         self.validation_size = validation_size
-        if headers:
-            self.data = pd.read_csv(data_path)
-        else:
-            self.data = pd.read_csv(data_path, header=None)
+        # self.data = pd.read_csv(data_path)
         self.categorical_threshold = categorical_threshold
 
     def find_continuous_columns(self):
         for col_name in self.data.columns:
             if self.data[col_name].dtype == 'O':
+                print(col_name)
                 if len(set(self.data[col_name])) > self.categorical_threshold:
                     # self.data[col_name].to_numeric(convert_numeric=True)
                     self.data[col_name] = pd.to_numeric(self.data[col_name], downcast='float', errors='coerce')
 
     def correct_typos(self):
         for col_name in self.data.columns:
+            print(col_name)
             if self.data[col_name].dtype == 'O':
                 values_taken = list(set(self.data[col_name]))
                 distance_matrix = [[LD(values_taken[i], values_taken[j]) for i in range(len(values_taken))] for j in
@@ -59,6 +73,7 @@ class DataLoader:
                 typos = [point for point in zip(typos[0], typos[1]) if point[0] < point[1]]
                 for typo in typos:
                     values_to_exchange = values_taken[typo[0]], values_taken[typo[1]]
+                    print(values_to_exchange)
                     self.data[col_name][self.data[col_name] == values_to_exchange[0]] = values_to_exchange[1]
 
     def encode_categorical_columns(self):
@@ -106,10 +121,20 @@ class DataLoader:
     def infer_missing_data(self):
         incomplete_columns = self.find_incomplete_columns()
         for col_name in incomplete_columns:
+            print(col_name)
             self.complete_column(col_name=col_name, missing_strategy=self.missing_stategy)
 
-    def transform(self):
+    def transform(self,X,y=None):
+        self.data = X
         self.find_continuous_columns()
-        self.infer_missing_data()
+        # self.infer_missing_data()
         self.correct_typos()
         self.encode_categorical_columns()
+        return self.data
+    def fit(self,X,y):
+        # Save used setup
+        self.transform(X,y)
+        return self
+
+
+
