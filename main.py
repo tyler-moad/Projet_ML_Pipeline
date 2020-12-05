@@ -660,8 +660,8 @@ if __name__ == "__main__":
 
     dict_score = {}
     for model, grid in dict_models.items():
-        m = Model(model,**dict_args)
-        m.gridsearchCV(X_train,y_train,grid)
+        m = Model(model)
+        m.gridSearchCV(X_train,y_train,grid,**dict_args)
         best_param = m.best_params_
         best_score = m.best_score_
         dict_score[model] = [best_param, best_score]
@@ -680,8 +680,9 @@ if __name__ == "__main__":
     chosen_model.set_params(**chosen_params)
     chosen_model.fit(X_train, y_train)
     y_predict = chosen_model.predict(X_test)
-    accuracy = m._accuracy(y_test, y_predict)
-    f1_score = m._f1_score(y_test, y_predict)
-    model_name = type(chosen_model).__name__
-    print("chosen model is " + model_name)
-    print("accuracy = %(accuracy)f \n f1_score = %(f1_score)f" %{"accuracy": accuracy, "f1_score": f1_score} )
+    m.score_matrix(y_test, y_predict)
+    # accuracy = m._accuracy(y_test, y_predict)
+    # f1_score = m._f1_score(y_test, y_predict)
+    # model_name = type(chosen_model).__name__
+    # print("chosen model is " + model_name)
+    # print("accuracy = %(accuracy)f \n f1_score = %(f1_score)f" %{"accuracy": accuracy, "f1_score": f1_score} )

@@ -17,7 +17,7 @@ class Model():
              over all the folds and then returns the mean
              :param X_train: the training samples
              :param y_train: the training labels
-             :param metric : the metric to use to calculate the performance of the model (accuracy of f1_score)
+             :param metric : the metric to use to calculate the performance of the model (accuracy or f1_score)
              :param k : number of folds
              :return: the mean of the metrics over the training and test of all folds
           """
@@ -39,7 +39,8 @@ class Model():
         return np.mean(evaluation)
 
     """@Author Moad Taoufik"""
-    def _generateGrid(self,params):
+    @staticmethod
+    def _generateGrid(params):
         keys, values = zip(*params.items())
         grid = []
         for v in product(*values):
@@ -48,7 +49,7 @@ class Model():
         return grid
         
     """@Author Mouad Jallouli"""
-    def gridSearchCV(self,X,y,params):
+    def gridSearchCV(self,X,y,params,metric:str = "accuracy"):
         """ 
           Implements a grid search cross validation on the training dataset
           The best found parameters and the best score are saved as a class attributes.
@@ -60,7 +61,7 @@ class Model():
         for param in params_grid:
             print(param)
             self.model.set_params(**param)
-            score = self.cross_validation_score(X,y)
+            score = self.cross_validation_score(X,y,metric=metric)
             print(score)
             if score > best_score:
                 best_score = score
@@ -93,7 +94,7 @@ class Model():
 
     """@Author Mouad Jallouli"""
     @staticmethod
-    def f1_score_support(y_true, y_predict):
+    def score_matrix(y_true, y_predict):
         """ 
            Returns pd.DataFrame with precision, recall and f1 score for each class
           :params:
@@ -101,15 +102,15 @@ class Model():
                 y_predict: array-like, predicted target
           
         """
-        p = 0
-        r = 0
-        f = 0
-        D = {"Precision":{},"Recall":{},"F1_score":{}}
+        p, r, f, a = 0, 0, 0, 0
+        D = {"Accuracy":{},"Precision":{},"Recall":{},"F1_score":{}}
         n_classes = y_true.nunique()
         for i in range(n_classes):
             tp = sum(((y_true == i) & (y_predict == i)))
             fp = sum(((y_true != i) & (y_predict == i)))
             fn = sum(((y_true == i) & (y_predict != i)))
+
+            a = np.mean((y_true == y_predict))
             if fp == 0: # edge case
                 p = 1
             else:
@@ -121,20 +122,17 @@ class Model():
             D["Precision"]["class "+str(i)] = p
             D["Recall"]["class "+str(i)] = r
             D["F1_score"]["class "+str(i)] = 2 * p * r / (p + r)
+            D["Accuracy"]["class "+str(i)] = a
             
     
         return pd.DataFrame(D)
     
     """@Author Reda Bensaid"""
     @staticmethod    
-<<<<<<< HEAD
 
    
 
     def _accuracy(y_true, y_predict):
-=======
-    def _accuracy (y_true, y_predict):
->>>>>>> b7950feec60f9d21131d3d15865683c4ae3c6292
         """
            this method calculate the accuracy of the prediction
            :param y_true: the labels
