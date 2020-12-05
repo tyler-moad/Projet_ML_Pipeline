@@ -2,6 +2,38 @@ import numpy as np
 import pandas as pd
 from sklearn.base import TransformerMixin
 
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Dec  4 14:41:18 2020
+
+@author: TheMatrix
+"""
+import numpy as np
+import pandas as pd
+
+
+class DataNormaliser:
+    def __init__(self, norm_strategy: str = "Mean"):
+        self.offset_parameter = None
+        self.scale_parameter = None
+        self.norm_strategy = norm_strategy
+
+    def fit(self, X):
+        if self.norm_strategy not in ["MinMax", "Mean"]:
+            raise Exception("Choose norm_strategy between MinMax or Mean")
+        if self.norm_strategy == "Mean":
+            self.offset_parameter = X.mean()
+            self.scale_parameter = X.std()
+        if self.norm_strategy == "MinMax":
+            self.offset_parameter = X.min()
+            self.scale_parameter = (X.max() - X.min())
+
+    def transform(self, X):
+        return (X - self.offset_parameter) / self.scale_parameter
+
+
+
+
 class DataPreprocessor(TransformerMixin):
 
     def __init__(self, data_path, missing_data_strategy: str = "mean", categorical_encoding: str = "label",
