@@ -48,7 +48,7 @@ class Model():
         return grid
         
     """@Author Mouad Jallouli"""
-    def gridsearchCV(self,X,y,params):
+    def gridSearchCV(self,X,y,params):
         """ 
           Implements a grid search cross validation on the training dataset
           The best found parameters and the best score are saved as a class attributes.
@@ -95,7 +95,7 @@ class Model():
     @staticmethod
     def f1_score_support(y_true, y_predict):
         """ 
-           Returns pandas dataframe with precision, recall and f1 score for each class
+           Returns pd.DataFrame with precision, recall and f1 score for each class
           :params:
                 y_true: array-like, true target
                 y_predict: array-like, predicted target
@@ -127,16 +127,15 @@ class Model():
     
     """@Author Reda Bensaid"""
     @staticmethod    
-<<<<<<< HEAD
-    def _accuracy (y_true, y_predict):
-=======
-    def accuracy (y_true, y_predict):
+
+   
+
+    def _accuracy(y_true, y_predict):
         """
            this method calculate the accuracy of the prediction
            :param y_true: the labels
            :param y_predict: the predictions
            :return: accuracy of the prediction
         """
->>>>>>> e0eea11677e00e81c590e6d754ba37bb36a11502
         good_predictions = np.sum((y_true == y_predict)*1)
         return good_predictions /len(y_true)
