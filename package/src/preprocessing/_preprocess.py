@@ -64,6 +64,7 @@ class DataPreprocessor(TransformerMixin):
 
         self.categorical_threshold = categorical_threshold
         self.columns_data=None
+        self.typos_data=None
         self.columns=None
     def find_continuous_columns(self):
         for col_name in self.data.columns:
@@ -72,21 +73,32 @@ class DataPreprocessor(TransformerMixin):
                 if len(set(self.data[col_name])) > self.categorical_threshold:
                     self.data[col_name] = pd.to_numeric(self.data[col_name], downcast='float', errors='coerce')
 
-    def correct_typos(self):
-        for col_name in self.data.columns:
-            print(col_name)
-            if self.data[col_name].dtype == 'O':
-                values_taken = list(set(self.data[col_name]))
-                values_taken=list(filter(None, values_taken))
-                print("values_taken",values_taken)
-                distance_matrix = [[LD(values_taken[i], values_taken[j]) for i in range(len(values_taken))] for j in
-                                   range(len(values_taken))]
-                typos = np.where((np.array(distance_matrix) > 0) & (np.array(distance_matrix) < 2))
-                typos = [point for point in zip(typos[0], typos[1]) if point[0] < point[1]]
-                for typo in typos:
-                    values_to_exchange = values_taken[typo[0]], values_taken[typo[1]]
-                    print(values_to_exchange)
-                    self.data[col_name][self.data[col_name] == values_to_exchange[0]] = values_to_exchange[1]
+    def correct_typos(self,fit=True):
+        if fit==True:
+            self.typos_data = {}
+            for col_name in self.data.columns:
+                self.typos_data[col_name]=[]
+                print(col_name)
+                if self.data[col_name].dtype == 'O':
+                    values_taken = list(set(self.data[col_name]))
+                    values_taken=list(filter(None, values_taken))
+                    print("values_taken",values_taken)
+                    distance_matrix = [[LD(values_taken[i], values_taken[j]) for i in range(len(values_taken))] for j in
+                                       range(len(values_taken))]
+                    typos = np.where((np.array(distance_matrix) > 0) & (np.array(distance_matrix) < 2))
+                    typos = [point for point in zip(typos[0], typos[1]) if point[0] < point[1]]
+                    for typo in typos:
+                        values_to_exchange = values_taken[typo[0]], values_taken[typo[1]]
+                        self.typos_data[col_name].append(values_to_exchange)
+                        print(values_to_exchange)
+                        self.data[col_name][self.data[col_name] == values_to_exchange[0]] = values_to_exchange[1]
+        else:
+            for col_name in self.data.columns:
+                if self.data[col_name].dtype == 'O':
+                    print("correcting",col_name)
+                    for values_to_exchange in self.typos_data[col_name]:
+                        self.data[col_name][self.data[col_name] == values_to_exchange[0]] = values_to_exchange[1]
+
 
     def encode_categorical_columns(self):
         categorical_columns = self.find_categorical_columns()
@@ -170,10 +182,8 @@ class DataPreprocessor(TransformerMixin):
         self.data = data
         self.find_continuous_columns()
         self.infer_missing_data(fit=False)
-        self.correct_typos()
+        self.correct_typos(fit=False)
         self.encode_categorical_columns()
-        print(self.columns)
-        print(self.data.columns)
         return self.data[self.columns[:-1]],self.data[self.columns[-1]]
     def fit_transform(self,X,y):
         # Save used setup
@@ -183,11 +193,10 @@ class DataPreprocessor(TransformerMixin):
         self.columns_data={key: None for key in self.columns}
         self.find_continuous_columns()
         self.infer_missing_data(fit=True)
-        self.correct_typos()
+        self.correct_typos(fit=True)
         self.encode_categorical_columns()
         if self.categorical_encoding_stategy=="onehot":
             self.columns=self.data.columns
-        print(self.columns)
         return self.data[self.columns[:-1]], self.data[self.columns[-1]]
 
 

@@ -12,7 +12,8 @@ class Model(BaseEstimator):
         self.model.fit(X,y)
     def predict(X:np.array):
         return self.model.predict(X) """
-    def f1_score(y_true,y_predict):
+
+    def f1_score(self,y_true,y_predict):
         p=[]
         r=[]
         n_classes = y_true.nunique()
@@ -22,7 +23,7 @@ class Model(BaseEstimator):
             fn= sum(((y_true==i) & (y_predict!=i)))
             p.append(tp/(tp+fp))
             r.append(tp/(tp+fn))
-        
+
         return 2*p*r/(p+r)
 
     def eval(self,X:np.array,y:np.array,metric:str,cv:int=10,avg=True):
@@ -33,17 +34,19 @@ class Model(BaseEstimator):
         return scores """
         y_pred = self.model.predict(X)
         return self.f1_score(y,y_pred)
-    def gridsearchCV(X,y,param_grid):
+
+    def gridsearchCV(self,X,y,param_grid):
         scores = {}
         for c in param_grid['C']:
-            model = self.model.set_params(**{'C'=c})
+            params={'C':c}
+            model = self.model.set_params(**params)
             score = self.cross_validation(X,y,model)
             scores[score] = model
         best_model = scores[max(scores.keys())]
         return best_model
             
 
-    def find_best_model(X,y,param_grid,scoring:str):
+    def find_best_model(self,X,y,param_grid,scoring:str):
         """Set model to the model with the best parameters
         Parameters
         ----------
@@ -73,12 +76,12 @@ class Model(BaseEstimator):
             y_train_fold = np.concatenate((y_train[:int((i/k)*len(y_train))],y_train[int(((i+1)/k)*len(y_train)):]))
             self.model.fit(X_train_fold,y_train_fold)
             y_pred = self.model.predict(X_test_fold)
-            evaluation.append(f1_score(y_test_fold, y_pred))
+            evaluation.append(self.f1_score(y_test_fold, y_pred))
         return np.mean(evaluation)
 
 
     def eval(self,X:np.array,y:np.array,cv:int=10,avg=True):
-        scores = cross_validation_score(self,X_train,y_train,cv)
+        scores = self.cross_validation_score(self,X_train,y_train,cv)
         if avg:
             return np.mean(scores)
         return scores
