@@ -1,4 +1,6 @@
 from sklearn.base import BaseEstimator
+import numpy as np
+from sklearn.metrics import accuracy_score
 class Model(BaseEstimator):
     def __init__(self,model,params=None):
         self.model = model
@@ -23,14 +25,7 @@ class Model(BaseEstimator):
             r.append(tp/(tp+fn))
         
         return 2*p*r/(p+r)
-    def eval(self,X:np.array,y:np.array,metric:str,cv:int=10,avg=True):
-        """ from sklearn.model_selection import cross_val_score
-        scores = cross_val_score(self.model,X,y,cv=cv)
-        if avg:
-            return np.mean(scores)
-        return scores """
-        y_pred = self.model.predict(X)
-        return self.f1_score(y,y_pred)
+
 
     def find_best_model(X,y,param_grid,scoring:str):
         """Set model to the model with the best parameters
@@ -47,41 +42,45 @@ class Model(BaseEstimator):
         from sklearn.model_selection import GridSearchCV
         cv = GridSearchCV(self.model,param_grid=param_grid,scoring=scoring,cv=10)
         self.model = cv.best_estimator_
+        return cv.scores
 
 
-    def train_test_split(X,Y,test_size = 0.1, validation_size = 0):
+    def train_test_split(X:np.array,y:np.array,test_size = 0.2):
     
-        if len(X) != len(Y) : 
-            print("error")
         permutation = np.random.permutation(len(X))
         X = X[permutation]
-        Y = Y[permutation]
-        if test_size + validation_size >= 1 : 
-            print("error")
-        else : 
-            X_train = X[:int((1-test_size-validation_size)*len(X))]
-            Y_train = Y[:int((1-test_size-validation_size)*len(Y))]
-            X_validation = X[int((1-test_size-validation_size)*len(X)):int((1-test_size)*len(X))]
-            Y_validation = Y[int((1-test_size-validation_size)*len(Y)):int((1-test_size)*len(Y))]
-            X_test = X[int((1-test_size)*len(X)):]
-            Y_test = Y[int((1-test_size)*len(Y)):]
+        y = y[permutation]
+
+        X_train = X[:int((1-test_size)*len(X))]
+        y_train = y[:int((1-test_size)*len(y))]
+        X_test = X[int((1-test_size)*len(X)):]
+        y_test = Y[int((1-test_size)*len(y)):]
 
 
-        return X_train, Y_train, X_validation, Y_validation, X_test, Y_test
+        return X_train, y_train, X_test, y_test
 
-
-    def cross_validation (X_train,Y_train, model = "dip_leurning", k = 10) : 
+"""
+    def cross_validation_score (self,X_train:np.array,y_train:np.array,k = 10) : 
     
         evaluation = []
-        if len(X) != len(Y) : 
-            print("error")
         for i in range(k):
-            X_test_fold = X_train[int((i/k)*len(X)):int(((i+1)/k)*len(X))]
-            Y_test_fold = Y_train[int((i/k)*len(Y)):int(((i+1)/k)*len(Y))]
-            X_train_fold = np.concatenate((X_train[:int((i/k)*len(X))],X_train[int(((i+1)/k)*len(X)):]))
-            Y_train_fold = np.concatenate((Y_train[:int((i/k)*len(Y))],Y_train[int(((i+1)/k)*len(Y)):]))
+            X_test_fold = X_train[int((i/k)*len(X_train)):int(((i+1)/k)*len(X_train))]
+            y_test_fold = y_train[int((i/k)*len(y_train)):int(((i+1)/k)*len(y_train))]
+            X_train_fold = np.concatenate((X_train[:int((i/k)*len(X_train))],X_train[int(((i+1)/k)*len(X_train)):]))
+            y_train_fold = np.concatenate((y_train[:int((i/k)*len(y_train))],y_train[int(((i+1)/k)*len(y_train)):]))
             train(X_train_fold,Y_train_fold, model)
+            fit(self,X_train_fold,y_train_fold)
+            eval(self,X_test_fold,y_test_fold,metric,cv:int=10,avg=True)
             evaluation.append(test(X_test_fold,Y_test_fold, model))
         return evaluation
 
 
+    def eval(self,X:np.array,y:np.array,cv:int=10,avg=True):
+        scores = cross_validation_score(self,X_train,y_train,cv)
+        if avg:
+            return np.mean(scores)
+        return scores
+        y_pred = self.model.predict(X)
+        return self.f1_score(y,y_pred)
+        
+"""
