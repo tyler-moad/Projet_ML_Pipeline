@@ -1,4 +1,5 @@
-import pandas as pd 
+import pandas as pd
+import numpy as np
 from sklearn.model_selection import train_test_split
 class DataLoader:
     def __init__(self, data_path,test_size:float=0.2,train_size:float=None):
@@ -13,15 +14,15 @@ class DataLoader:
     def train_test_split(X, y, test_size):
 
         permutation = np.random.permutation(len(X))
-        X = X[permutation]
-        y = y[permutation]
+        X = X.iloc[permutation]
+        y = y.iloc[permutation]
 
-        X_train = X[:int((1 - test_size) * len(X))]
-        y_train = y[:int((1 - test_size) * len(y))]
-        X_test = X[int((1 - test_size) * len(X)):]
-        y_test = Y[int((1 - test_size) * len(y)):]
+        X_train = X.iloc[:int((1 - test_size) * len(X))]
+        y_train = y.iloc[:int((1 - test_size) * len(y))]
+        X_test = X.iloc[int((1 - test_size) * len(X)):]
+        y_test = y.iloc[int((1 - test_size) * len(y)):]
 
-        return X_train, y_train, X_test, y_test
+        return X_train, X_test, y_train, y_test
 
     def load(self,target_column):
         self.target = target_column
