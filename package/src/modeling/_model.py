@@ -1,6 +1,5 @@
 from sklearn.base import BaseEstimator
 import numpy as np
-from sklearn.metrics import accuracy_score
 class Model(BaseEstimator):
     def __init__(self,model,params=None):
         self.model = model
@@ -63,7 +62,7 @@ class Model(BaseEstimator):
 
 
 
-"""
+
     def cross_validation_score (self,X_train:np.array,y_train:np.array,k = 10) : 
     
         evaluation = []
@@ -72,11 +71,10 @@ class Model(BaseEstimator):
             y_test_fold = y_train[int((i/k)*len(y_train)):int(((i+1)/k)*len(y_train))]
             X_train_fold = np.concatenate((X_train[:int((i/k)*len(X_train))],X_train[int(((i+1)/k)*len(X_train)):]))
             y_train_fold = np.concatenate((y_train[:int((i/k)*len(y_train))],y_train[int(((i+1)/k)*len(y_train)):]))
-            train(X_train_fold,Y_train_fold, model)
-            fit(self,X_train_fold,y_train_fold)
-            eval(self,X_test_fold,y_test_fold,metric,cv:int=10,avg=True)
-            evaluation.append(test(X_test_fold,Y_test_fold, model))
-        return evaluation
+            self.model.fit(X_train_fold,y_train_fold)
+            y_pred = self.model.predict(X_test_fold)
+            evaluation.append(f1_score(y_test_fold, y_pred))
+        return np.mean(evaluation)
 
 
     def eval(self,X:np.array,y:np.array,cv:int=10,avg=True):
@@ -87,4 +85,3 @@ class Model(BaseEstimator):
         y_pred = self.model.predict(X)
         return self.f1_score(y,y_pred)
         
-"""
