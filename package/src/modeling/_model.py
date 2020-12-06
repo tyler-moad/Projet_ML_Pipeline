@@ -5,14 +5,14 @@ class Model(BaseEstimator):
     def __init__(self,model,params=None):
         self.model = model
         self.params = params
-    def set_params():
+    """ def set_params():
         self.model.set_params(**self.params)
     def set_params_grid(param_grid:dict):
         self.param_grid = param_grid
     def fit(self,X:np.array,y:np.array):
         self.model.fit(X,y)
     def predict(X:np.array):
-        return self.model.predict(X)
+        return self.model.predict(X) """
     def f1_score(y_true,y_predict):
         p=[]
         r=[]
@@ -26,6 +26,23 @@ class Model(BaseEstimator):
         
         return 2*p*r/(p+r)
 
+    def eval(self,X:np.array,y:np.array,metric:str,cv:int=10,avg=True):
+        """ from sklearn.model_selection import cross_val_score
+        scores = cross_val_score(self.model,X,y,cv=cv)
+        if avg:
+            return np.mean(scores)
+        return scores """
+        y_pred = self.model.predict(X)
+        return self.f1_score(y,y_pred)
+    def gridsearchCV(X,y,param_grid):
+        scores = {}
+        for c in param_grid['C']:
+            model = self.model.set_params(**{'C'=c})
+            score = self.cross_validation(X,y,model)
+            scores[score] = model
+        best_model = scores[max(scores.keys())]
+        return best_model
+            
 
     def find_best_model(X,y,param_grid,scoring:str):
         """Set model to the model with the best parameters
