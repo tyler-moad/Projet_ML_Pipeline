@@ -30,25 +30,7 @@ class Model(BaseEstimator):
         return best_model, score
             
 
-    def find_best_model(X,y,param_grid,scoring:str):
-        """Set model to the model with the best parameters
-        Parameters
-        ----------
-        X : array-like
-            Input data
-        y : array-like
-            Target for Input data
-        scoring : str
-            used metric
-            
-        """
-        from sklearn.model_selection import GridSearchCV
-        cv = GridSearchCV(self.model,param_grid=param_grid,scoring=scoring,cv=10)
-        self.model = cv.best_estimator_
-        return cv.scores
-
-
-
+    
 
     def cross_validation_score(self,X_train:np.array,y_train:np.array,model,k = 10) : 
     
@@ -63,12 +45,3 @@ class Model(BaseEstimator):
             evaluation.append(f1_score(y_test_fold, y_pred))
         return np.mean(evaluation)
 
-
-    def eval(self,X:np.array,y:np.array,cv:int=10,avg=True):
-        scores = cross_validation_score(self,X_train,y_train,cv)
-        if avg:
-            return np.mean(scores)
-        return scores
-        y_pred = self.model.predict(X)
-        return self.f1_score(y,y_pred)
-        
