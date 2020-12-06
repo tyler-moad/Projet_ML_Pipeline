@@ -1,34 +1,29 @@
 import numpy as np
 from sklearn.feature_selection import SelectKBest,mutual_info_classif
- # class FeatureSelector:
- #    def __init__(self):
- #        self.fs = SelectKBest(score_func=mutual_info_classif, k=5)
- #
- #    def fit(X,y,n_features=8):
- #        if n_features:
- #            self.fs.set_params(k=n_features)
-	#     # self.fs.fit(X, y)
- #
- #    def transform(X):
- #        return self.fs.transform(X)
+
 class FeatureSelector:
+    #Class used to select features
     def __init__(self, output_dimension: int = None, variance_treshhold: float = 0.95):
+        if variance_treshhold > 1:
+            raise Exception("variance_treshhold must be less than 1")
         self.output_dimension = output_dimension
-        self.variance_treshhold = variance_treshhold
+        self.variance_treshhold = variance_treshhold #variance_explained kept in percent
         self.eigenvectors = None
         self.eigenvalues = None
 
     def pca_fit(self, X_df):
+        #Takes pandas X dataframe as input and prepares for PCA transformation
         X = X_df.to_numpy()
-        cov = np.cov(X, rowvar=False)
-        u, s, v = np.linalg.svd(cov)
-        self.eigenvalues = s
+        cov = np.cov(X, rowvar=False) #covariance matrix of our samples
+        u, s, _ = np.linalg.svd(cov) #apply singular value decomposition to get eigenvalues and vectors of covariance matrix
+        self.eigenvalues = s #store results
         self.eigenvectors = u
         print(len(s), "componenents (PCA)")
 
+
     def pca_transform(self, X_df):
         X = X_df.to_numpy()
-        if self.output_dimension == None:
+        if self.output_dimension == None: #if user does not provide output dimension use variance_treshhold as a criterion to apply pca
             explained_variance = 0
             total = sum(self.eigenvalues)
             compteur = 0
