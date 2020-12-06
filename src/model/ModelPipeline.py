@@ -1,4 +1,6 @@
 import typing
+import numpy as np
+
 class ModelPipeline:
     def __init__(self,model,params=None):
         self.model = model
