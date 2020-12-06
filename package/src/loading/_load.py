@@ -3,10 +3,13 @@ import numpy as np
 
 
 class DataLoader:
-    def __init__(self, data_path,test_size:float=0.2,train_size:float=None):
+    def __init__(self, data_path,test_size:float=0.2,train_size:float=None,header :bool =True ):
         self.test_size = test_size
         self.train_size = train_size
-        self.data = pd.read_csv(data_path) 
+        if header:
+            self.data = pd.read_csv(data_path)
+        else:
+            self.data = pd.read_csv(data_path,header=None)
         self.target = None
         self.features = []
         self.X, self.X_train, self.X_test = None, None, None
@@ -26,10 +29,12 @@ class DataLoader:
 
         return X_train, X_test, y_train, y_test
 
-    def load(self,target_column):
+    def load(self,target_column,columns_to_remove=[]):
+        print(columns_to_remove)
         self.target = target_column
         for col in self.data.columns:
-            if col != self.target:
+            if col != self.target and col not in columns_to_remove :
+                print(col)
                 self.features.append(col)
         self.X, self.y = self.data[self.features], self.data[self.target]
         self.X_train, self.X_test,self.y_train, self.y_test = DataLoader.train_test_split(self.X, self.y,
