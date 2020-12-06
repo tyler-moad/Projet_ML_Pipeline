@@ -45,19 +45,6 @@ class Model(BaseEstimator):
         return cv.scores
 
 
-    def train_test_split(X:np.array,y:np.array,test_size = 0.2):
-    
-        permutation = np.random.permutation(len(X))
-        X = X[permutation]
-        y = y[permutation]
-
-        X_train = X[:int((1-test_size)*len(X))]
-        y_train = y[:int((1-test_size)*len(y))]
-        X_test = X[int((1-test_size)*len(X)):]
-        y_test = Y[int((1-test_size)*len(y)):]
-
-
-        return X_train, y_train, X_test, y_test
 
 """
     def cross_validation_score (self,X_train:np.array,y_train:np.array,k = 10) : 
