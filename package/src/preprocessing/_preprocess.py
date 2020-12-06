@@ -50,8 +50,7 @@ class DataNormaliser:
 
 class DataPreprocessor(TransformerMixin):
 
-    def __init__(self, data_path=None, missing_data_strategy: str = "mean", categorical_encoding: str = "label",
-                 test_size: float = 0.1, validation_size=0.1, categorical_threshold=15):
+    def __init__(self, missing_data_strategy: str = "mean", categorical_encoding: str = "label", categorical_threshold=15):
 
         if missing_data_strategy in ["mean", "median", "radical"]:
             self.missing_stategy = missing_data_strategy
@@ -63,17 +62,14 @@ class DataPreprocessor(TransformerMixin):
         else:
             raise ValueError("catagorical encoding strategy not in allowed methods ")
 
-        self.test_size = test_size
-        self.validation_size = validation_size
-        # self.data = pd.read_csv(data_path)
         self.categorical_threshold = categorical_threshold
-
+        self.columns_data=None
+        self.columns=None
     def find_continuous_columns(self):
         for col_name in self.data.columns:
             if self.data[col_name].dtype == 'O':
                 print(col_name)
                 if len(set(self.data[col_name])) > self.categorical_threshold:
-                    self.data[col_name].to_numeric(convert_numeric=True)
                     self.data[col_name] = pd.to_numeric(self.data[col_name], downcast='float', errors='coerce')
 
     def correct_typos(self):
@@ -81,6 +77,8 @@ class DataPreprocessor(TransformerMixin):
             print(col_name)
             if self.data[col_name].dtype == 'O':
                 values_taken = list(set(self.data[col_name]))
+                values_taken=list(filter(None, values_taken))
+                print("values_taken",values_taken)
                 distance_matrix = [[LD(values_taken[i], values_taken[j]) for i in range(len(values_taken))] for j in
                                    range(len(values_taken))]
                 typos = np.where((np.array(distance_matrix) > 0) & (np.array(distance_matrix) < 2))
@@ -113,44 +111,84 @@ class DataPreprocessor(TransformerMixin):
                 incomplete_columns.append(col_name)
         return incomplete_columns
 
-    def complete_column(self, col_name, missing_strategy="mean"):
-        if np.sum(self.data[col_name].isna()) > 0:
+    def complete_column(self, col_name, missing_strategy="mean",fit=True):
+        if fit==True:
+            column_data=None
             if self.data[col_name].dtype != "O":
                 if missing_strategy == "mean":
                     mean = np.mean(self.data[col_name].iloc[np.where(self.data[col_name].isna() == False)[0]])
-                    self.data[col_name].iloc[np.where(self.data[col_name].isna() == True)[0]] = mean
+                    column_data=mean
+                    if np.sum(self.data[col_name].isna()) > 0:
+                        self.data[col_name].iloc[np.where(self.data[col_name].isna() == True)[0]] = mean
                 elif missing_strategy == "median":
                     median = np.median(self.data[col_name].iloc[np.where(self.data[col_name].isna() == False)[0]])
-                    self.data[col_name].iloc[np.where(self.data[col_name].isna() == True)[0]] = median
+                    column_data=median
+                    if np.sum(self.data[col_name].isna()) > 0:
+                        self.data[col_name].iloc[np.where(self.data[col_name].isna() == True)[0]] = median
                 elif missing_strategy == "radical":
-                    self.data = self.data.drop(columns=[col_name])
+                    if np.sum(self.data[col_name].isna()) > 0:
+                        self.data = self.data.drop(columns=[col_name])
             else:
                 if missing_strategy == "mean" or missing_strategy == "median":
                     available_data = list(self.data[col_name].iloc[np.where(self.data[col_name].isna() == False)[0]].values)
                     most_found = max(set(available_data), key=available_data.count)
-                    self.data[col_name].iloc[np.where(self.data[col_name].isna() == True)[0]] = most_found
+                    column_data=most_found
+                    if np.sum(self.data[col_name].isna()) > 0:
+                        self.data[col_name].iloc[np.where(self.data[col_name].isna() == True)[0]] = most_found
                 elif missing_strategy == "radical":
-                    self.data = self.data.drop(columns=[col_name])
+                    if np.sum(self.data[col_name].isna()) > 0:
+                        self.data = self.data.drop(columns=[col_name])
+            self.columns_data[col_name]=column_data
+        else:
+            if self.data[col_name].dtype != "O":
+                if missing_strategy == "mean":
+                    if np.sum(self.data[col_name].isna()) > 0:
+                        self.data[col_name].iloc[np.where(self.data[col_name].isna() == True)[0]] = self.columns_data[col_name]
+                elif missing_strategy == "median":
+                    if np.sum(self.data[col_name].isna()) > 0:
+                        self.data[col_name].iloc[np.where(self.data[col_name].isna() == True)[0]] = self.columns_data[col_name]
+                elif missing_strategy == "radical":
+                    if np.sum(self.data[col_name].isna()) > 0:
+                        self.data = self.data.drop(columns=[col_name])
+            else:
+                if missing_strategy == "mean" or missing_strategy == "median":
+                    if np.sum(self.data[col_name].isna()) > 0:
+                        self.data[col_name].iloc[np.where(self.data[col_name].isna() == True)[0]] = self.columns_data[col_name]
+                elif missing_strategy == "radical":
+                    if np.sum(self.data[col_name].isna()) > 0:
+                        self.data = self.data.drop(columns=[col_name])
 
-    def infer_missing_data(self):
+
+    def infer_missing_data(self,fit=True):
         incomplete_columns = self.find_incomplete_columns()
         for col_name in incomplete_columns:
-            # print(col_name)
-            self.complete_column(col_name=col_name, missing_strategy=self.missing_stategy)
+            print(col_name)
+            self.complete_column(col_name=col_name, missing_strategy=self.missing_stategy,fit=fit)
 
     def transform(self,X,y=None):
         data=pd.concat([X, y], axis=1, sort=False)
         self.data = data
-        columns=self.data.columns
         self.find_continuous_columns()
-        self.infer_missing_data()
+        self.infer_missing_data(fit=False)
         self.correct_typos()
         self.encode_categorical_columns()
-        return self.data[columns[:-1]],self.data[columns[-1]]
-    def fit(self,X,y):
+        print(self.columns)
+        print(self.data.columns)
+        return self.data[self.columns[:-1]],self.data[self.columns[-1]]
+    def fit_transform(self,X,y):
         # Save used setup
-        self.transform(X,y)
-        return self
+        data=pd.concat([X, y], axis=1, sort=False)
+        self.data = data
+        self.columns=self.data.columns
+        self.columns_data={key: None for key in self.columns}
+        self.find_continuous_columns()
+        self.infer_missing_data(fit=True)
+        self.correct_typos()
+        self.encode_categorical_columns()
+        if self.categorical_encoding_stategy=="onehot":
+            self.columns=self.data.columns
+        print(self.columns)
+        return self.data[self.columns[:-1]], self.data[self.columns[-1]]
 
 
 
