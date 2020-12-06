@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split
+
+
 class DataLoader:
     def __init__(self, data_path,test_size:float=0.2,train_size:float=None):
         self.test_size = test_size
@@ -10,7 +11,8 @@ class DataLoader:
         self.features = []
         self.X, self.X_train, self.X_test = None, None, None
         self.y, self.y_train, self.y_test = None,None, None
-
+    
+    @staticmethod
     def train_test_split(X, y, test_size):
 
         permutation = np.random.permutation(len(X))
