@@ -40,7 +40,7 @@ class DataNormaliser:
         self.norm_strategy = norm_strategy
 
     def fit(self, X):
-        print("Fitting the Normalizer")
+        # print("Fitting the Normalizer")
         if self.norm_strategy not in ["MinMax", "Mean"]:
             raise Exception("Choose norm_strategy between MinMax or Mean")
         if self.norm_strategy == "Mean":
@@ -51,7 +51,7 @@ class DataNormaliser:
             self.scale_parameter = (X.max() - X.min())
 
     def transform(self, X):
-        print("We normalize the data")
+        # print("We normalize the data")
         return (X - self.offset_parameter) / self.scale_parameter
 
 
@@ -68,7 +68,6 @@ class DataPreprocessor:
     This class implements a data preprocessor that is responsible for cleaning the dataset by input NaN values ,
     correcting typos in the dataset and encoding it in a suitable categorical format for machine learning algorithms
     """
->>>>>>> 617a12355c7da5c8be950fc00dc57b7c768b2d3d
 
     def __init__(self, missing_data_strategy: str = "mean", categorical_encoding: str = "label", categorical_threshold=15):
         """
