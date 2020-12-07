@@ -5,6 +5,7 @@ class Model(BaseEstimator):
         self.model = model
         self.params = params
     
+    @staticmethod
     def f1_score(y_true,y_predict):
         p=0
         r=0
@@ -16,8 +17,10 @@ class Model(BaseEstimator):
             fn= sum(((y_true==i) & (y_predict!=i)))
             p += tp/(tp+fp)
             r += tp/(tp+fn)
-        
+        p = p / n_classes
+        r = r / n_classes
         return 2*p*r/(p+r)
+
     def gridsearchCV(self,X,y,param_grid):
         from sklearn.model_selection import ParameterGrid
         scores = {}
