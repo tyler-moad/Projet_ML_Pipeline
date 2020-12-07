@@ -39,7 +39,7 @@ class Model():
 
     def gridsearchCV(self,X,y,params):
         params_grid = self.generateGrid(params)
-        scores_dict = {}
+        
         best_param = None
         best_score = 0
         for param in params_grid:
