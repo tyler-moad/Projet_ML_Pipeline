@@ -1,6 +1,7 @@
 import pandas as pd
 pd.set_option('mode.chained_assignment', None)
 import numpy as np
+import time
 from itertools import product
 
 class DataLoader:
@@ -149,7 +150,6 @@ class DataPreprocessor:
                         values_to_exchange = values_taken[typo[0]], values_taken[typo[1]]
                         #We store the typo information for the test dataset
                         self.typos_data[col_name].append(values_to_exchange)
-                        print("Typo detected on column :",col_name,"betwen ",values_to_exchange[0],"and ",values_to_exchange[1])
                         #we replace each occurence of the right handside of the typo by the other one
                         self.data[col_name][self.data[col_name] == values_to_exchange[0]] = values_to_exchange[1]
                         print("Typo corrected")
@@ -157,7 +157,6 @@ class DataPreprocessor:
             #for the test dataset we use the stored typo pairs for the correction
             for col_name in self.data.columns:
                 if self.data[col_name].dtype == 'O':
-                    print("Correction typos for test dataset for ",col_name)
                     #we retrieve the typo pairs in the typos_data dictionary
                     for values_to_exchange in self.typos_data[col_name]:
                         #We do the correction
@@ -580,32 +579,47 @@ if __name__ == "__main__":
 
     import sys
     arguments = sys.argv[1:]
+    if len(arguments) == 3:
+        for i in range(6):
+            arguments = arguments + [""]
+
     """
     arguments[0] :str data(csv)  path
     arguments[1] :str target column
-    arguments[2] :str missing data filling strategy ["","mean", "median","radical"]
-    arguments[3] :str categorical features encoding ["","label","onehot"]
-    arguments[4] :str normalisation_strategy ["","Mean", "MinMax"]
-    arguments[5] :str pca parameters ["variance treshhold (=< 1)", "output_dimension(>1)"]
-    arguments[6] :str evaluation metric ["","accuracy","f1_score"]
+    arguments[2]  :str  True or False wether dataframe has header with column names or not
+    arguments[3] :str test size < 1
+    arguments[4] :str missing data filling strategy ["","mean", "median","radical"]
+    arguments[5] :str categorical features encoding ["","label","onehot"]
+    arguments[6] :str normalisation_strategy ["","Mean", "MinMax"]
+    arguments[7] :str pca parameters ["variance treshhold (=< 1)", "output_dimension(>1)"]
+    arguments[8] :str evaluation metric ["","accuracy","f1_score"]
         
     """
+    tic = time.time()
+    dict_args = {}
 
     data_path = arguments[0]
-    if len(arguments[1]) > 0:
+    try:
+        target_column = int(arguments[1])
+    except ValueError:
         target_column = arguments[1]
-    else:
-        target_column = "classification"
-    data_loader = DataLoader(data_path = data_path)
+
+    if len(arguments[2]) > 0:
+        dict_args["header"] = arguments[2] == "True"
+    if len(arguments[3]) > 0:
+        dict_args["test_size"] = float(arguments[3])
+
+    data_loader = DataLoader(data_path = data_path, **dict_args)
     data_loader.load(target_column = target_column)
     X_train, y_train, X_test, y_test = data_loader.X_train, data_loader.y_train,data_loader.X_test, data_loader.y_test
 
     dict_args = {}
-    if len(arguments[2]) > 0:
-        dict_args["missing_data_strategy"] = arguments[2]
 
-    if len(arguments[3]) > 0:
-        dict_args["categorical_encoding"] = arguments[3]
+    if len(arguments[4]) > 0:
+        dict_args["missing_data_strategy"] = arguments[4]
+
+    if len(arguments[5]) > 0:
+        dict_args["categorical_encoding"] = arguments[5]
 
     data_preprocessor = DataPreprocessor(**dict_args)
 
@@ -613,8 +627,8 @@ if __name__ == "__main__":
     X_test, y_test = data_preprocessor.transform(X_test, y_test)
 
     dict_args = {}
-    if len(arguments[4]) > 0:
-        dict_args["norm_strategy"] = arguments[4]
+    if len(arguments[6]) > 0:
+        dict_args["norm_strategy"] = arguments[6]
 
     data_normaliser = DataNormaliser(**dict_args)
     data_normaliser.fit(X_train)
@@ -622,11 +636,11 @@ if __name__ == "__main__":
     X_test = data_normaliser.transform(X_test)
 
     dict_args = {}
-    if len(arguments[5]) > 0:
-        if float(arguments[5]) > 1:
-            dict_args["output_dimension"] = int(arguments[5])
-        elif float(arguments[5]) <= 1:
-            dict_args["variance_treshhold"] = float(arguments[5])
+    if len(arguments[7]) > 0:
+        if float(arguments[7]) > 1:
+            dict_args["output_dimension"] = int(arguments[7])
+        elif float(arguments[7]) <= 1:
+            dict_args["variance_treshhold"] = float(arguments[7])
 
     feature_selector = FeatureSelector(**dict_args)
     feature_selector.fit(X_train)
@@ -646,43 +660,47 @@ if __name__ == "__main__":
 
 
     dict_models = {}
-    dict_models[LogisticRegression()] = {'C': [0.001, .009, 0.01, .09, 1, 5, 10, 25]}
     dict_models[DecisionTreeClassifier()] = {'min_samples_split': range(10, 500, 20), 'max_depth': range(1, 20, 2), 'criterion': ['gini', 'entropy']}
     dict_models[KNeighborsClassifier()] = {'n_neighbors': [4, 5, 6, 7], 'leaf_size': [1, 3, 5], 'weights': ['uniform', 'distance']}
     dict_models[SVC()] = {'C': [0.1, 1, 10], 'gamma': ['auto','scale'], 'kernel': ['rbf']}
     dict_models[RandomForestClassifier()] = {'n_estimators': [200, 500], 'max_features': ['auto', 'log2'], 'max_depth': [4, 5, 6, 7, 8],
                         'criterion': ['gini', 'entropy']}
+    dict_models[LogisticRegression()] = {'C': [0.001, .009, 0.01, .09, 1, 5, 10, 25]}
 
 
     dict_args = {}
-    if len(arguments[6]) > 0:
-        dict_args["metric"] = arguments[6]
+    if len(arguments[8]) > 0:
+        dict_args["metric"] = arguments[8]
 
     dict_score = {}
     for model, grid in dict_models.items():
-        m = Model(model)
-        m.gridSearchCV(X_train,y_train,grid,**dict_args)
+        m = Model(model,**dict_args)
+        m.gridsearchCV(X_train,y_train,grid)
         best_param = m.best_params_
         best_score = m.best_score_
         dict_score[model] = [best_param, best_score]
+
     best_score = 0
     for key,value in dict_score.items():
         print("\n")
         print(type(key).__name__)
-        print("Chosen parameters")
-        print(value[0])
+        print("Chosen parameters:", value[0])
         print("CrossValidation Score %(score)f" %{"score": value[1]})
         print("\n")
+        #We search for best value
         if value[1] > best_score:
+            best_score = value[1]
             chosen_model = key
 
     chosen_params = dict_score[chosen_model][0]
     chosen_model.set_params(**chosen_params)
     chosen_model.fit(X_train, y_train)
     y_predict = chosen_model.predict(X_test)
-    m.score_matrix(y_test, y_predict)
-    # accuracy = m._accuracy(y_test, y_predict)
-    # f1_score = m._f1_score(y_test, y_predict)
-    # model_name = type(chosen_model).__name__
-    # print("chosen model is " + model_name)
-    # print("accuracy = %(accuracy)f \n f1_score = %(f1_score)f" %{"accuracy": accuracy, "f1_score": f1_score} )
+    accuracy = m._accuracy(y_test, y_predict)
+    f1_score = m._f1_score(y_test, y_predict)
+    model_name = type(chosen_model).__name__
+    print("Chosen model is " + model_name)
+    print("accuracy = %(accuracy)f \n f1_score = %(f1_score)f" %{"accuracy": accuracy, "f1_score": f1_score})
+    toc  = time.time()
+    delay = toc - tic
+    print("run in : ",  delay, "seconds")
