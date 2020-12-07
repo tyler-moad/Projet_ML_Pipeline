@@ -33,9 +33,9 @@ class Model():
             self.model.fit(X_train_fold, y_train_fold)
             y_pred = self.model.predict(X_test_fold)
             if metric == "accuracy" : 
-                evaluation.append(self.accuracy(y_test_fold, y_pred))
+                evaluation.append(self._accuracy(y_test_fold, y_pred))
             else : 
-                evaluation.append(self.f1_score(y_test_fold, y_pred))
+                evaluation.append(self._f1_score(y_test_fold, y_pred))
         return np.mean(evaluation)
 
     """@Author Moad Taoufik"""
@@ -127,16 +127,12 @@ class Model():
     
     """@Author Reda Bensaid"""
     @staticmethod    
-<<<<<<< HEAD
     def _accuracy (y_true, y_predict):
-=======
-    def accuracy (y_true, y_predict):
         """
            this method calculate the accuracy of the prediction
            :param y_true: the labels
            :param y_predict: the predictions
            :return: accuracy of the prediction
         """
->>>>>>> e0eea11677e00e81c590e6d754ba37bb36a11502
         good_predictions = np.sum((y_true == y_predict)*1)
         return good_predictions /len(y_true)
