@@ -2,37 +2,8 @@ from itertools import product
 class Model()
     def __init__(self, model):
         self.model = model
-
-        self.params = params
-    
-    @staticmethod
-    def f1_score(y_true,y_predict):
-        p=0
-        r=0
-        n_classes = y_true.nunique()
-        print(n_classes)
-        for i in range(n_classes):
-            tp= sum(((y_true==i) & (y_predict==i)))
-            fp= sum(((y_true!=i) & (y_predict==i)))
-            fn= sum(((y_true==i) & (y_predict!=i)))
-            p += tp/(tp+fp)
-            r += tp/(tp+fn)
-        p = p / n_classes
-        r = r / n_classes
-        return 2*p*r/(p+r)
-
-    def gridsearchCV(self,X,y,param_grid):
-        from sklearn.model_selection import ParameterGrid
-        scores = {}
-        for params in ParameterGrid(param_grid):
-            model = self.model.set_params(**params)
-            score = self.cross_validation_score(X,y,model)
-            scores[score] = model
-        best_model = scores[max(scores.keys())]
-        score = np.mean(scores.keys())
-        return best_model, score
-            
-
+        self.best_score = None
+        self.best_params = None
 
     def fit(self,X,Y,params_dic):
         self.model.set_params(**params_dic)
