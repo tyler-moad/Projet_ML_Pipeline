@@ -523,30 +523,35 @@ class Model:
                 r = 1
             else:
                 r = tp / (tp + fn)
-            f += 2 * p * r / (p + r)
+            if p ==0 and r ==0:
+                f += 0
+            else:
+                f += 2 * p * r / (p + r)
 
         return f / n_classes
 
     """@Author Mouad Jallouli"""
 
+    """@Author Mouad Jallouli"""
+
     @staticmethod
-    def f1_score_support(y_true, y_predict):
+    def score_matrix(y_true, y_predict):
         """
-           Returns pandas dataframe with precision, recall and f1 score for each class
+           Returns pd.DataFrame with precision, recall and f1 score for each class
           :params:
                 y_true: array-like, true target
                 y_predict: array-like, predicted target
 
         """
-        p = 0
-        r = 0
-        f = 0
-        D = {"Precision": {}, "Recall": {}, "F1_score": {}}
+        p, r, f, a = 0, 0, 0, 0
+        D = {"Accuracy": {}, "Precision": {}, "Recall": {}, "F1_score": {}}
         n_classes = y_true.nunique()
         for i in range(n_classes):
             tp = sum(((y_true == i) & (y_predict == i)))
             fp = sum(((y_true != i) & (y_predict == i)))
             fn = sum(((y_true == i) & (y_predict != i)))
+
+            a = np.mean((y_true == y_predict))
             if fp == 0:  # edge case
                 p = 1
             else:
@@ -558,6 +563,7 @@ class Model:
             D["Precision"]["class " + str(i)] = p
             D["Recall"]["class " + str(i)] = r
             D["F1_score"]["class " + str(i)] = 2 * p * r / (p + r)
+            D["Accuracy"]["class " + str(i)] = a
 
         return pd.DataFrame(D)
 
@@ -579,7 +585,7 @@ if __name__ == "__main__":
 
     import sys
     arguments = sys.argv[1:]
-    if len(arguments) == 3:
+    if len(arguments) < 9:
         for i in range(6):
             arguments = arguments + [""]
 
@@ -698,9 +704,14 @@ if __name__ == "__main__":
     y_predict = chosen_model.predict(X_test)
     accuracy = m._accuracy(y_test, y_predict)
     f1_score = m._f1_score(y_test, y_predict)
+    score_df = m.score_matrix(y_test,y_predict)
     model_name = type(chosen_model).__name__
     print("Chosen model is " + model_name)
+    print(score_df)
+    print("\n")
     print("accuracy = %(accuracy)f \n f1_score = %(f1_score)f" %{"accuracy": accuracy, "f1_score": f1_score})
+    print(" \n SK LEARN score \n")
+    print(chosen_model.score(X_test,y_test))
     toc  = time.time()
     delay = toc - tic
     print("run in : ",  delay, "seconds")
