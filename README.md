@@ -1,6 +1,8 @@
-# Projet3A_ML
+# Automatic classification Pipeline
+##Projet3A_ML
+A classification pipeline that performs automatic data preparation and processing in addition to training the best selected model via grid search and report calssification results
 
-Fait par  : 
+Made by  : 
 
 Maachou Marouane <br/>
 Bensaid Reda <br/>
